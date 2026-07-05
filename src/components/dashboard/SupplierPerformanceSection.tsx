@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Truck, Star } from 'lucide-react';
 import {
@@ -6,6 +6,7 @@ import {
   ResponsiveContainer, Tooltip, Legend
 } from 'recharts';
 import { supplierRadarData, radarMetrics } from '../../data/dashboardData';
+import { ChartSkeleton } from './ChartSkeleton';
 
 const COLORS = ['#6366f1', '#22d3ee', '#10b981', '#f59e0b', '#a855f7'];
 const METRIC_LABELS: Record<string, string> = {
@@ -45,6 +46,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function SupplierPerformanceSection() {
   const [selected, setSelected] = useState<Set<string>>(new Set(supplierRadarData.slice(0, 3).map(s => s.supplier)));
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleSupplier = (name: string) => {
     setSelected(prev => {
@@ -78,54 +85,60 @@ export function SupplierPerformanceSection() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 24 }}>
           {/* Radar */}
           <div>
-            {/* Supplier selectors */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-              {supplierRadarData.map((sup, i) => (
-                <button
-                  key={sup.supplier}
-                  onClick={() => toggleSupplier(sup.supplier)}
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: 'var(--radius-full)',
-                    border: `1px solid ${selected.has(sup.supplier) ? COLORS[i % COLORS.length] + '80' : 'var(--border-default)'}`,
-                    background: selected.has(sup.supplier) ? `${COLORS[i % COLORS.length]}18` : 'transparent',
-                    color: selected.has(sup.supplier) ? COLORS[i % COLORS.length] : 'var(--text-muted)',
-                    fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)', transition: 'all 0.2s ease',
-                  }}
-                >
-                  {sup.supplier.replace('PT ', '').replace('CV ', '').replace('UD ', '')}
-                </button>
-              ))}
-            </div>
+            {isLoading ? (
+              <ChartSkeleton variant="radar" height={320} />
+            ) : (
+              <>
+                {/* Supplier selectors */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+                  {supplierRadarData.map((sup, i) => (
+                    <button
+                      key={sup.supplier}
+                      onClick={() => toggleSupplier(sup.supplier)}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: 'var(--radius-full)',
+                        border: `1px solid ${selected.has(sup.supplier) ? COLORS[i % COLORS.length] + '80' : 'var(--border-default)'}`,
+                        background: selected.has(sup.supplier) ? `${COLORS[i % COLORS.length]}18` : 'transparent',
+                        color: selected.has(sup.supplier) ? COLORS[i % COLORS.length] : 'var(--text-muted)',
+                        fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)', transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {sup.supplier.replace('PT ', '').replace('CV ', '').replace('UD ', '')}
+                    </button>
+                  ))}
+                </div>
 
-            <ResponsiveContainer width="100%" height={260}>
-              <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
-                <PolarGrid stroke="rgba(255,255,255,0.08)" />
-                <PolarAngleAxis
-                  dataKey="metric"
-                  tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'Inter, sans-serif' }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                {selectedArr.map((name, i) => (
-                  <Radar
-                    key={name}
-                    name={name}
-                    dataKey={name}
-                    stroke={COLORS[supplierRadarData.findIndex(s => s.supplier === name) % COLORS.length]}
-                    fill={COLORS[supplierRadarData.findIndex(s => s.supplier === name) % COLORS.length]}
-                    fillOpacity={0.12}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                  />
-                ))}
-                <Legend
-                  iconType="circle"
-                  iconSize={8}
-                  formatter={(v) => <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{v}</span>}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={260}>
+                  <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+                    <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                    <PolarAngleAxis
+                      dataKey="metric"
+                      tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'Inter, sans-serif' }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    {selectedArr.map((name, i) => (
+                      <Radar
+                        key={name}
+                        name={name}
+                        dataKey={name}
+                        stroke={COLORS[supplierRadarData.findIndex(s => s.supplier === name) % COLORS.length]}
+                        fill={COLORS[supplierRadarData.findIndex(s => s.supplier === name) % COLORS.length]}
+                        fillOpacity={0.12}
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                      />
+                    ))}
+                    <Legend
+                      iconType="circle"
+                      iconSize={8}
+                      formatter={(v) => <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{v}</span>}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </>
+            )}
           </div>
 
           {/* Ranking list */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Filter } from 'lucide-react';
 import {
@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import type { ForecastPoint } from '../../data/dashboardData';
 import { forecastData7, forecastData30, forecastData90 } from '../../data/dashboardData';
+import { ChartSkeleton } from './ChartSkeleton';
 
 const HORIZONS = ['7 Hari', '30 Hari', '90 Hari'];
 const dataMap: Record<string, ForecastPoint[]> = {
@@ -32,6 +33,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function DemandForecastSection() {
   const [horizon, setHorizon] = useState('30 Hari');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
   const data = dataMap[horizon];
   const todayIdx = data.findIndex(d => d.actual !== undefined && data[data.indexOf(d) + 1]?.actual === undefined);
   const todayLabel = todayIdx >= 0 ? data[todayIdx].date : undefined;
@@ -70,74 +77,78 @@ export function DemandForecastSection() {
         </div>
       </div>
 
-      <div className="section-card-body">
-        <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-            <defs>
-              <linearGradient id="gradActual" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradForecast" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradBand" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.08} />
-                <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis
-              dataKey="date"
-              stroke="var(--text-muted)"
-              tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-              interval={Math.floor(data.length / 8)}
-              axisLine={{ stroke: 'var(--border-default)' }}
-              tickLine={false}
-            />
-            <YAxis
-              stroke="var(--text-muted)"
-              tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-            />
-            <Tooltip content={<CustomTooltip />} />
+      <div className="section-card-body" style={{ minHeight: 300 }}>
+        {isLoading ? (
+          <ChartSkeleton variant="area" height={280} />
+        ) : (
+          <ResponsiveContainer width="100%" height={280}>
+            <AreaChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="gradActual" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gradForecast" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gradBand" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.08} />
+                  <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis
+                dataKey="date"
+                stroke="var(--text-muted)"
+                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                interval={Math.floor(data.length / 8)}
+                axisLine={{ stroke: 'var(--border-default)' }}
+                tickLine={false}
+              />
+              <YAxis
+                stroke="var(--text-muted)"
+                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+              />
+              <Tooltip content={<CustomTooltip />} />
 
-            {/* Confidence band */}
-            <Area dataKey="upper" stroke="none" fill="url(#gradBand)" fillOpacity={1} legendType="none" />
-            <Area dataKey="lower" stroke="none" fill="var(--bg-void)" fillOpacity={1} legendType="none" />
+              {/* Confidence band */}
+              <Area dataKey="upper" stroke="none" fill="url(#gradBand)" fillOpacity={1} legendType="none" />
+              <Area dataKey="lower" stroke="none" fill="var(--bg-void)" fillOpacity={1} legendType="none" />
 
-            {/* Actual */}
-            <Area
-              dataKey="actual"
-              name="Aktual"
-              stroke="#6366f1"
-              strokeWidth={2.5}
-              fill="url(#gradActual)"
-              dot={false}
-              activeDot={{ r: 4, fill: '#6366f1', stroke: '#fff', strokeWidth: 1.5 }}
-            />
+              {/* Actual */}
+              <Area
+                dataKey="actual"
+                name="Aktual"
+                stroke="#6366f1"
+                strokeWidth={2.5}
+                fill="url(#gradActual)"
+                dot={false}
+                activeDot={{ r: 4, fill: '#6366f1', stroke: '#fff', strokeWidth: 1.5 }}
+              />
 
-            {/* Forecast */}
-            <Area
-              dataKey="forecast"
-              name="Forecast AI"
-              stroke="#22d3ee"
-              strokeWidth={2}
-              strokeDasharray="6 3"
-              fill="url(#gradForecast)"
-              dot={false}
-              activeDot={{ r: 4, fill: '#22d3ee', stroke: '#fff', strokeWidth: 1.5 }}
-            />
+              {/* Forecast */}
+              <Area
+                dataKey="forecast"
+                name="Forecast AI"
+                stroke="#22d3ee"
+                strokeWidth={2}
+                strokeDasharray="6 3"
+                fill="url(#gradForecast)"
+                dot={false}
+                activeDot={{ r: 4, fill: '#22d3ee', stroke: '#fff', strokeWidth: 1.5 }}
+              />
 
-            {/* Today line */}
-            {todayLabel && (
-              <ReferenceLine x={todayLabel} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 4" label={{ value: 'Hari Ini', position: 'top', fill: '#94a3b8', fontSize: 10 }} />
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
+              {/* Today line */}
+              {todayLabel && (
+                <ReferenceLine x={todayLabel} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 4" label={{ value: 'Hari Ini', position: 'top', fill: '#94a3b8', fontSize: 10 }} />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
 
         {/* Legend */}
         <div style={{ display: 'flex', gap: 20, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>

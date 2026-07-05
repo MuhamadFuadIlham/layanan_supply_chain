@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { X, Package, AlertTriangle, BarChart3, ShoppingCart } from 'lucide-react';
 import { formatRupiah } from '../../data/dashboardData';
 import type { TreemapItem } from '../../data/dashboardData';
+import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 
 interface DetailDrawerProps {
   item: TreemapItem | null;
@@ -96,12 +97,19 @@ export function DetailDrawer({ item, onClose }: DetailDrawerProps) {
             </div>
           </div>
 
+          {/* Mini tabs */}
+          <div style={{ display: 'flex', gap: 16, borderBottom: '1px solid var(--border-default)', marginBottom: 16, paddingBottom: 8 }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '2px solid var(--accent-primary)' }}>Pergerakan</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>Detail</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>Riwayat PO</span>
+          </div>
+
           {/* Key metrics */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {[
-              { label: 'Nilai Inventory', value: formatRupiah(item.value), color: '#a5b4fc' },
+              { label: 'Safety Stock', value: `${item.safetyStock || 0} unit`, color: 'var(--text-primary)' },
+              { label: 'Daily Demand', value: `${item.dailyDemand || 0} unit/hari`, color: 'var(--text-primary)' },
               { label: 'Reorder Point', value: `${item.reorderPoint} unit`, color: '#22d3ee' },
-              { label: 'Kategori', value: item.category, color: 'var(--text-secondary)' },
               { label: 'Habis Dalam', value: item.daysToStockout !== undefined ? (item.daysToStockout === 0 ? 'HABIS' : `${item.daysToStockout} hari`) : 'N/A', color: item.daysToStockout !== undefined && item.daysToStockout <= 5 ? '#f87171' : 'var(--text-secondary)' },
             ].map(m => (
               <div key={m.label} style={{
@@ -136,23 +144,22 @@ export function DetailDrawer({ item, onClose }: DetailDrawerProps) {
             </div>
           )}
 
-          {/* Stock movement placeholder */}
+          {/* Stock movement sparkline */}
           <div>
             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
               <BarChart3 size={14} /> Riwayat Pergerakan (30 Hari)
             </div>
-            <div style={{ height: 60, background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'flex-end', gap: 3, padding: '8px 10px', overflow: 'hidden' }}>
-              {Array.from({ length: 30 }, (_, i) => {
-                const h = Math.max(5, Math.random() * 100);
-                const active = i > 24;
-                return (
-                  <div key={i} style={{
-                    flex: 1, height: `${h}%`, borderRadius: '2px 2px 0 0',
-                    background: active ? color : `${color}40`,
-                    transition: 'height 0.5s ease',
-                  }} />
-                );
-              })}
+            <div style={{ height: 80, background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', padding: '10px 0', border: '1px solid var(--border-default)' }}>
+              {item.movementData ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={item.movementData.map((val, i) => ({ day: i, qty: val }))}>
+                    <YAxis domain={['auto', 'auto']} hide />
+                    <Line type="monotone" dataKey="qty" stroke={color} strokeWidth={2} dot={false} isAnimationActive={true} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.7rem', marginTop: 25 }}>Belum ada data pergerakan</div>
+              )}
             </div>
           </div>
 

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 
 // Layout
 import { DashboardSidebar } from '../components/dashboard/DashboardSidebar';
@@ -77,8 +77,6 @@ export function DashboardPage({ onBack }: DashboardPageProps) {
       <DashboardSidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(c => !c)}
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
         onBack={onBack}
       />
 
@@ -90,6 +88,7 @@ export function DashboardPage({ onBack }: DashboardPageProps) {
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
           alertCount={criticalAlerts.length}
+          onSectionJump={handleSectionJump}
         />
 
         {/* Content below header */}

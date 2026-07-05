@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Package, Grid3X3, List, AlertTriangle } from 'lucide-react';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 import { inventoryTreemap, formatRupiah } from '../../data/dashboardData';
 import type { TreemapItem } from '../../data/dashboardData';
+import { ChartSkeleton } from './ChartSkeleton';
 
 const statusColors: Record<string, string> = {
   safe: '#10b981',
@@ -127,6 +128,12 @@ interface InventoryHealthSectionProps {
 
 export function InventoryHealthSection({ onItemClick }: InventoryHealthSectionProps) {
   const [view, setView] = useState<'treemap' | 'table'>('treemap');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const statusCount = inventoryTreemap.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
@@ -169,12 +176,14 @@ export function InventoryHealthSection({ onItemClick }: InventoryHealthSectionPr
         </div>
       </div>
 
-      <div className="section-card-body">
-        {view === 'treemap' ? (
+      <div className="section-card-body" style={{ minHeight: 360 }}>
+        {isLoading ? (
+          <ChartSkeleton variant="treemap" height={360} />
+        ) : view === 'treemap' ? (
           <div style={{ height: 360 }}>
             <ResponsiveContainer width="100%" height="100%">
               <Treemap
-                data={inventoryTreemap}
+                data={inventoryTreemap as any}
                 dataKey="value"
                 aspectRatio={4 / 3}
                 content={(props: any) => <CustomTreemapContent {...props} onItemClick={onItemClick} />}

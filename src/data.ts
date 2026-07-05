@@ -314,7 +314,7 @@ export const apiSimulator = {
     return Promise.reject(new Error('SKU not found'));
   },
 
-  predictLeadTime(params: {
+  async predictLeadTime(params: {
     sku_code: string;
     price: number;
     reorder_qty: number;
@@ -323,37 +323,55 @@ export const apiSimulator = {
     supplier_id?: string;
     last_lead_time?: number;
   }): Promise<PredictionRecord> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const baseLeadTime = 4.5 + (params.price / 120000) * 1.8 + (params.reorder_qty / 400) * 1.2;
-        const inspectModifier = params.inspection_status === 'Failed' ? 2.8 : params.inspection_status === 'Pending' ? 1.4 : 0;
-        const volumeModifier = (params.production_volume / 4000) * 0.7;
-        const noise = (Math.random() - 0.5) * 1.2;
+    const sku = SKU_STATE.find(s => s.sku_code === params.sku_code);
+    if (!sku) throw new Error("SKU not found");
 
-        const predictedVal = +(baseLeadTime + inspectModifier + volumeModifier + noise).toFixed(1);
-        const predictedLeadTime = Math.max(2.1, Math.min(14.0, predictedVal));
+    // Prepare payload based on the agreed real API schema
+    const payload = {
+        Harga_jual: params.price,
+        Jumlah_produk_terjual: sku.daily_demand * 365.0,
+        Kuantitas_pesanan: params.reorder_qty > 0 ? params.reorder_qty : sku.eoq,
+        Volume_produksi_pabrik: params.production_volume,
+        Waktu_produksi_pabrik: 5.0, // Operational baseline
+        Biaya_produksi_pabrik: params.production_volume * 15000.0,
+        Total_biaya_operasional: (params.production_volume * 18000.0) + 5000000.0,
+        Tingkat_cacat_produk: params.inspection_status === 'Failed' ? 5.5 : 1.5,
+        Hasil_inspeksi_kualitas: params.inspection_status,
+        Tingkat_stok_gudang: sku.current_stock
+    };
 
-        const confidenceScore = +(0.965 + Math.random() * 0.025).toFixed(4); // 96.5% - 99%
-        const marginError = +(0.35 + Math.random() * 0.35).toFixed(2);
-        const ciLower = +(predictedLeadTime - marginError).toFixed(2);
-        const ciUpper = +(predictedLeadTime + marginError).toFixed(2);
+    try {
+        const response = await fetch('http://localhost:8000/api/v1/predict-rop', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
 
-        const dailyDemand = Math.floor(Math.random() * 12) + 6;
-        const safetyStock = Math.floor(dailyDemand * 1.5 + 4);
-        const rop = Math.floor(dailyDemand * predictedLeadTime + safetyStock);
-        const eoq = params.reorder_qty > 0 ? params.reorder_qty : Math.floor(Math.sqrt((2 * dailyDemand * 365 * 20000) / (params.price * 0.18)));
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        const predictedLeadTime = data.predicted_lead_time_days;
+        const rop = data.calculated_rop_units;
+        const safetyStock = 5; // Standard buffer defined in backend
+        const dailyDemand = sku.daily_demand;
 
         const record: PredictionRecord = {
           sku_code: params.sku_code,
           predicted_lead_time: predictedLeadTime,
-          confidence_score: confidenceScore,
-          margin_error: marginError,
-          confidence_interval_lower: Math.max(1.0, ciLower),
-          confidence_interval_upper: ciUpper,
+          // Remove Math.random, use deterministic base confidence
+          confidence_score: 0.95, 
+          margin_error: 0.66, // Using static MAE base from ML audit
+          confidence_interval_lower: Math.max(1.0, predictedLeadTime - 0.66),
+          confidence_interval_upper: predictedLeadTime + 0.66,
           daily_demand: dailyDemand,
           recommended_safety_stock: safetyStock,
           recommended_rop: rop,
-          recommended_eoq: eoq,
+          recommended_eoq: payload.Kuantitas_pesanan,
           formula_breakdown: {
             daily_demand: dailyDemand,
             lead_time: predictedLeadTime,
@@ -365,9 +383,12 @@ export const apiSimulator = {
         };
 
         PREDICTION_STATE.unshift(record);
-        resolve(record);
-      }, 1500); // realistic AI process simulation
-    });
+        return record;
+
+    } catch (error) {
+        console.error("Prediction API failed:", error);
+        throw error;
+    }
   },
 
   createPO(params: {

@@ -62,6 +62,9 @@ export interface TreemapItem {
   category: string;
   reorderPoint: number;
   daysToStockout?: number;
+  safetyStock?: number;
+  dailyDemand?: number;
+  movementData?: number[];
 }
 
 export interface WaterfallItem {
@@ -349,24 +352,24 @@ export const forecastData90 = genForecast(90);
 // ── Inventory Treemap ─────────────────────────────────────────────────────
 
 export const inventoryTreemap: TreemapItem[] = [
-  { id: 't1', sku: 'SK-001', name: 'Kabel HDMI 2m', value: 45000000, stock: 320, status: 'safe', category: 'Elektronik', reorderPoint: 150 },
-  { id: 't2', sku: 'SK-002', name: 'Power Bank 20000mAh', value: 82000000, stock: 45, status: 'danger', category: 'Elektronik', reorderPoint: 80, daysToStockout: 3 },
-  { id: 't3', sku: 'SK-003', name: 'Mouse Wireless', value: 31500000, stock: 210, status: 'safe', category: 'Komputer', reorderPoint: 100 },
-  { id: 't4', sku: 'SK-004', name: 'Keyboard Mechanical', value: 67200000, stock: 88, status: 'warning', category: 'Komputer', reorderPoint: 100, daysToStockout: 12 },
-  { id: 't5', sku: 'SK-005', name: 'Monitor LED 24"', value: 124000000, stock: 35, status: 'danger', category: 'Elektronik', reorderPoint: 50, daysToStockout: 5 },
-  { id: 't6', sku: 'SK-006', name: 'Headphone BT', value: 28800000, stock: 160, status: 'safe', category: 'Audio', reorderPoint: 60 },
-  { id: 't7', sku: 'SK-007', name: 'Flash Disk 128GB', value: 18500000, stock: 450, status: 'overstock', category: 'Storage', reorderPoint: 100 },
-  { id: 't8', sku: 'SK-008', name: 'Kabel Type-C', value: 12000000, stock: 680, status: 'overstock', category: 'Aksesori', reorderPoint: 200 },
-  { id: 't9', sku: 'SK-009', name: 'SSD 512GB', value: 95000000, stock: 62, status: 'warning', category: 'Storage', reorderPoint: 70, daysToStockout: 18 },
-  { id: 't10', sku: 'SK-010', name: 'Router WiFi 6', value: 56000000, stock: 28, status: 'danger', category: 'Jaringan', reorderPoint: 40, daysToStockout: 6 },
-  { id: 't11', sku: 'SK-011', name: 'Webcam HD 1080p', value: 22400000, stock: 95, status: 'safe', category: 'Komputer', reorderPoint: 50 },
-  { id: 't12', sku: 'SK-012', name: 'Speaker Portable', value: 38000000, stock: 130, status: 'safe', category: 'Audio', reorderPoint: 60 },
-  { id: 't13', sku: 'SK-013', name: 'Charger Fast 65W', value: 15600000, stock: 10, status: 'danger', category: 'Aksesori', reorderPoint: 80, daysToStockout: 2 },
-  { id: 't14', sku: 'SK-014', name: 'HDD Eksternal 1TB', value: 44000000, stock: 55, status: 'warning', category: 'Storage', reorderPoint: 60, daysToStockout: 21 },
-  { id: 't15', sku: 'SK-015', name: 'Stand Laptop Adjustable', value: 9800000, stock: 0, status: 'dead', category: 'Aksesori', reorderPoint: 30, daysToStockout: 0 },
-  { id: 't16', sku: 'SK-016', name: 'Hub USB 7-Port', value: 24500000, stock: 190, status: 'overstock', category: 'Aksesori', reorderPoint: 80 },
-  { id: 't17', sku: 'SK-017', name: 'Printer Inkjet', value: 68000000, stock: 18, status: 'danger', category: 'Printer', reorderPoint: 25, daysToStockout: 7 },
-  { id: 't18', sku: 'SK-018', name: 'Toner Cartridge', value: 31200000, stock: 240, status: 'safe', category: 'Printer', reorderPoint: 80 },
+  { id: 't1', sku: 'SK-001', name: 'Kabel HDMI 2m', value: 45000000, stock: 320, status: 'safe', category: 'Elektronik', reorderPoint: 150, safetyStock: 80, dailyDemand: 12, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 50) + 10) },
+  { id: 't2', sku: 'SK-002', name: 'Power Bank 20000mAh', value: 82000000, stock: 45, status: 'danger', category: 'Elektronik', reorderPoint: 80, daysToStockout: 3, safetyStock: 30, dailyDemand: 15, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 40) + 5) },
+  { id: 't3', sku: 'SK-003', name: 'Mouse Wireless', value: 31500000, stock: 210, status: 'safe', category: 'Komputer', reorderPoint: 100, safetyStock: 50, dailyDemand: 8, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 30) + 15) },
+  { id: 't4', sku: 'SK-004', name: 'Keyboard Mechanical', value: 67200000, stock: 88, status: 'warning', category: 'Komputer', reorderPoint: 100, daysToStockout: 12, safetyStock: 40, dailyDemand: 6, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 20) + 5) },
+  { id: 't5', sku: 'SK-005', name: 'Monitor LED 24"', value: 124000000, stock: 35, status: 'danger', category: 'Elektronik', reorderPoint: 50, daysToStockout: 5, safetyStock: 20, dailyDemand: 4, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 10) + 2) },
+  { id: 't6', sku: 'SK-006', name: 'Headphone BT', value: 28800000, stock: 160, status: 'safe', category: 'Audio', reorderPoint: 60, safetyStock: 30, dailyDemand: 7, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 25) + 10) },
+  { id: 't7', sku: 'SK-007', name: 'Flash Disk 128GB', value: 18500000, stock: 450, status: 'overstock', category: 'Storage', reorderPoint: 100, safetyStock: 40, dailyDemand: 15, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 60) + 20) },
+  { id: 't8', sku: 'SK-008', name: 'Kabel Type-C', value: 12000000, stock: 680, status: 'overstock', category: 'Aksesori', reorderPoint: 200, safetyStock: 100, dailyDemand: 25, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 80) + 30) },
+  { id: 't9', sku: 'SK-009', name: 'SSD 512GB', value: 95000000, stock: 62, status: 'warning', category: 'Storage', reorderPoint: 70, daysToStockout: 18, safetyStock: 30, dailyDemand: 5, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 15) + 3) },
+  { id: 't10', sku: 'SK-010', name: 'Router WiFi 6', value: 56000000, stock: 28, status: 'danger', category: 'Jaringan', reorderPoint: 40, daysToStockout: 6, safetyStock: 20, dailyDemand: 4, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 12) + 2) },
+  { id: 't11', sku: 'SK-011', name: 'Webcam HD 1080p', value: 22400000, stock: 95, status: 'safe', category: 'Komputer', reorderPoint: 50, safetyStock: 20, dailyDemand: 6, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 20) + 5) },
+  { id: 't12', sku: 'SK-012', name: 'Speaker Portable', value: 38000000, stock: 130, status: 'safe', category: 'Audio', reorderPoint: 60, safetyStock: 25, dailyDemand: 8, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 25) + 8) },
+  { id: 't13', sku: 'SK-013', name: 'Charger Fast 65W', value: 15600000, stock: 10, status: 'danger', category: 'Aksesori', reorderPoint: 80, daysToStockout: 2, safetyStock: 30, dailyDemand: 12, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 30) + 5) },
+  { id: 't14', sku: 'SK-014', name: 'HDD Eksternal 1TB', value: 44000000, stock: 55, status: 'warning', category: 'Storage', reorderPoint: 60, daysToStockout: 21, safetyStock: 25, dailyDemand: 4, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 15) + 2) },
+  { id: 't15', sku: 'SK-015', name: 'Stand Laptop Adjustable', value: 9800000, stock: 0, status: 'dead', category: 'Aksesori', reorderPoint: 30, daysToStockout: 0, safetyStock: 15, dailyDemand: 0, movementData: Array.from({length: 30}, () => 0) },
+  { id: 't16', sku: 'SK-016', name: 'Hub USB 7-Port', value: 24500000, stock: 190, status: 'overstock', category: 'Aksesori', reorderPoint: 80, safetyStock: 35, dailyDemand: 10, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 35) + 10) },
+  { id: 't17', sku: 'SK-017', name: 'Printer Inkjet', value: 68000000, stock: 18, status: 'danger', category: 'Printer', reorderPoint: 25, daysToStockout: 7, safetyStock: 10, dailyDemand: 2, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 8) + 1) },
+  { id: 't18', sku: 'SK-018', name: 'Toner Cartridge', value: 31200000, stock: 240, status: 'safe', category: 'Printer', reorderPoint: 80, safetyStock: 40, dailyDemand: 14, movementData: Array.from({length: 30}, () => Math.floor(Math.random() * 40) + 12) },
 ];
 
 // ── Financial Impact Waterfall ─────────────────────────────────────────────

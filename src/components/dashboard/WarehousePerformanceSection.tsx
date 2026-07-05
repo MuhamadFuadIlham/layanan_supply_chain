@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Warehouse } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { warehouseData } from '../../data/dashboardData';
+import { ChartSkeleton } from './ChartSkeleton';
 
 // Progress Ring SVG
 function ProgressRing({ value, max = 100, color, size = 80 }: { value: number; max?: number; color: string; size?: number }) {
@@ -47,6 +48,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function WarehousePerformanceSection() {
   const overall = warehouseData[0]; // Primary warehouse
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <motion.div className="section-card" id="section-warehouse" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -60,52 +67,56 @@ export function WarehousePerformanceSection() {
         </div>
       </div>
 
-      <div className="section-card-body">
-        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 32, alignItems: 'start' }}>
-          {/* Rings */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, auto)', gap: 16, alignItems: 'center' }}>
-            {[
-              { label: 'Order Fulfillment', value: overall.fulfillment, color: '#10b981' },
-              { label: 'Pick Accuracy', value: overall.accuracy, color: '#6366f1' },
-              { label: 'Kapasitas Terisi', value: overall.capacity, color: '#f59e0b' },
-              { label: 'On-Time Ship', value: 96.4, color: '#22d3ee' },
-            ].map(ring => (
-              <div key={ring.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <ProgressRing value={ring.value} color={ring.color} size={88} />
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'center', fontWeight: 600, maxWidth: 80 }}>
-                  {ring.label}
+      <div className="section-card-body" style={{ minHeight: 250 }}>
+        {isLoading ? (
+          <ChartSkeleton variant="gauge" height={200} />
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 32, alignItems: 'start' }}>
+            {/* Rings */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, auto)', gap: 16, alignItems: 'center' }}>
+              {[
+                { label: 'Order Fulfillment', value: overall.fulfillment, color: '#10b981' },
+                { label: 'Pick Accuracy', value: overall.accuracy, color: '#6366f1' },
+                { label: 'Kapasitas Terisi', value: overall.capacity, color: '#f59e0b' },
+                { label: 'On-Time Ship', value: 96.4, color: '#22d3ee' },
+              ].map(ring => (
+                <div key={ring.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                  <ProgressRing value={ring.value} color={ring.color} size={88} />
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'center', fontWeight: 600, maxWidth: 80 }}>
+                    {ring.label}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Bar chart per warehouse */}
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12 }}>
-              Fulfillment Rate per Lokasi Gudang
+              ))}
             </div>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={warehouseData} barSize={28} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 9.5, fill: 'var(--text-muted)', fontFamily: 'Inter, sans-serif' }}
-                  axisLine={false} tickLine={false}
-                />
-                <YAxis
-                  domain={[80, 100]} tick={{ fontSize: 9, fill: 'var(--text-muted)' }}
-                  axisLine={false} tickLine={false} unit="%" tickCount={5}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="fulfillment" name="Fulfillment" radius={[4, 4, 0, 0]}>
-                  {warehouseData.map((entry, i) => (
-                    <Cell key={i} fill={entry.fulfillment >= 95 ? '#10b981' : entry.fulfillment >= 90 ? '#f59e0b' : '#ef4444'} fillOpacity={0.8} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+
+            {/* Bar chart per warehouse */}
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12 }}>
+                Fulfillment Rate per Lokasi Gudang
+              </div>
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={warehouseData} barSize={28} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 9.5, fill: 'var(--text-muted)', fontFamily: 'Inter, sans-serif' }}
+                    axisLine={false} tickLine={false}
+                  />
+                  <YAxis
+                    domain={[80, 100]} tick={{ fontSize: 9, fill: 'var(--text-muted)' }}
+                    axisLine={false} tickLine={false} unit="%" tickCount={5}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="fulfillment" name="Fulfillment" radius={[4, 4, 0, 0]}>
+                    {warehouseData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fulfillment >= 95 ? '#10b981' : entry.fulfillment >= 90 ? '#f59e0b' : '#ef4444'} fillOpacity={0.8} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </motion.div>
   );

@@ -19,14 +19,25 @@ const insightTypeColors: Record<string, string> = {
 export function OracleSummaryPanel({ insights, onSectionJump, updatedMinutes = 3 }: OracleSummaryPanelProps) {
   return (
     <motion.div
-      className="oracle-panel"
+      className="glass-panel oracle-panel"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
+      style={{ padding: '20px 24px', marginBottom: 24 }}
     >
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative', zIndex: 1 }}>
-        <div className="oracle-avatar">🔮</div>
+        <div style={{ 
+          width: 36, height: 36, borderRadius: '50%', 
+          background: 'rgba(100, 138, 255, 0.15)', 
+          border: '1px solid rgba(100, 138, 255, 0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 15px rgba(100, 138, 255, 0.3)'
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#648aff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+          </svg>
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             Oracle AI — Ringkasan Hari Ini

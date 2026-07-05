@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 import { waterfallData, formatRupiah } from '../../data/dashboardData';
+import { ChartSkeleton } from './ChartSkeleton';
 
 // Build waterfall running total
 function buildWaterfallBars() {
@@ -42,6 +43,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function FinancialImpactSection() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <motion.div className="section-card" id="section-financial" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
       <div className="section-card-header">
@@ -64,39 +72,43 @@ export function FinancialImpactSection() {
         </div>
       </div>
 
-      <div className="section-card-body">
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={bars} margin={{ top: 24, right: 20, bottom: 20, left: 0 }} barSize={48}>
-            <XAxis
-              dataKey="name"
-              tick={{ fontSize: 9.5, fill: 'var(--text-muted)', fontFamily: 'Inter, sans-serif' }}
-              axisLine={{ stroke: 'var(--border-default)' }}
-              tickLine={false}
-              height={40}
-            />
-            <YAxis
-              tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v) => formatRupiah(v)}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            {/* Invisible base bar for waterfall offset */}
-            <Bar dataKey="base" stackId="wf" fill="transparent" />
-            {/* Visible colored bar */}
-            <Bar dataKey="bar" stackId="wf" radius={[4, 4, 0, 0]}>
-              {bars.map((entry, i) => (
-                <Cell key={i} fill={entry.color || '#6366f1'} fillOpacity={0.75} />
-              ))}
-              <LabelList
-                dataKey="displayValue"
-                position="top"
-                formatter={(v: number) => (v >= 0 ? '+' : '') + formatRupiah(v)}
-                style={{ fontSize: 9, fill: 'var(--text-secondary)', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}
+      <div className="section-card-body" style={{ minHeight: 300 }}>
+        {isLoading ? (
+          <ChartSkeleton variant="bar" height={280} />
+        ) : (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={bars} margin={{ top: 24, right: 20, bottom: 20, left: 0 }} barSize={48}>
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 9.5, fill: 'var(--text-muted)', fontFamily: 'Inter, sans-serif' }}
+                axisLine={{ stroke: 'var(--border-default)' }}
+                tickLine={false}
+                height={40}
               />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+              <YAxis
+                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => formatRupiah(v)}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              {/* Invisible base bar for waterfall offset */}
+              <Bar dataKey="base" stackId="wf" fill="transparent" />
+              {/* Visible colored bar */}
+              <Bar dataKey="bar" stackId="wf" radius={[4, 4, 0, 0]}>
+                {bars.map((entry, i) => (
+                  <Cell key={i} fill={entry.color || '#6366f1'} fillOpacity={0.75} />
+                ))}
+                <LabelList
+                  dataKey="displayValue"
+                  position="top"
+                  formatter={(v: any) => (Number(v) >= 0 ? '+' : '') + formatRupiah(Number(v))}
+                  style={{ fontSize: 9, fill: 'var(--text-secondary)', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
 
         {/* Legend */}
         <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>

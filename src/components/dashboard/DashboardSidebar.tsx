@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, Package, TrendingUp, Truck, BarChart3, Settings, ChevronLeft, ChevronRight, Activity, FileText, Users, Warehouse } from 'lucide-react';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, FileInput, BrainCircuit, Bot, TrendingUp, Settings, ChevronLeft, ChevronRight, CheckSquare, Activity, ArchiveRestore, Gauge } from 'lucide-react';
 
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
-  activeSection: string;
-  onSectionChange: (s: string) => void;
   onBack: () => void;
 }
 
-const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'forecast', label: 'Demand Forecast', icon: TrendingUp },
-  { id: 'inventory', label: 'Inventory', icon: Package },
-  { id: 'supplier', label: 'Supplier', icon: Truck },
-  { id: 'warehouse', label: 'Warehouse', icon: Warehouse },
-  { id: 'reports', label: 'Laporan', icon: FileText },
-  { id: 'analytics', label: 'Analytics', icon: Activity },
+const mlPipelineItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/app/dashboard' },
+  { id: 'input', label: 'Input Prediksi', icon: FileInput, path: '/app/input' },
+  { id: 'feature-engineering', label: 'Feature Engineering', icon: Activity, path: '/app/feature-engineering' },
+  { id: 'context-layer', label: 'Context Layer', icon: BrainCircuit, path: '/app/context-layer' },
+  { id: 'inference', label: 'Prediksi AI', icon: Bot, path: '/app/inference' },
+  { id: 'decision-engine', label: 'Decision Engine', icon: CheckSquare, path: '/app/decision-engine' },
+  { id: 'simulasi', label: 'Simulasi', icon: TrendingUp, path: '/app/simulasi' },
+  { id: 'riwayat', label: 'Riwayat Prediksi', icon: ArchiveRestore, path: '/app/riwayat' },
+  { id: 'monitoring', label: 'Monitoring Model', icon: Gauge, path: '/app/monitoring' },
 ];
 
 const bottomItems = [
-  { id: 'team', label: 'Tim', icon: Users },
-  { id: 'settings', label: 'Pengaturan', icon: Settings },
+  { id: 'settings', label: 'Pengaturan', icon: Settings, path: '/app/pengaturan' },
 ];
 
-export function DashboardSidebar({ collapsed, onToggle, activeSection, onSectionChange, onBack }: SidebarProps) {
+export function DashboardSidebar({ collapsed, onToggle, onBack }: SidebarProps) {
   return (
     <div className={`dashboard-sidebar-zone ${collapsed ? 'collapsed' : ''}`}>
       <div className="dash-sidebar">
@@ -41,37 +41,39 @@ export function DashboardSidebar({ collapsed, onToggle, activeSection, onSection
 
         {/* Nav */}
         <nav className="sidebar-nav">
-          {!collapsed && <div className="sidebar-section-label">Navigasi</div>}
-          {navItems.map(item => {
+          {!collapsed && <div className="sidebar-section-label">ML Pipeline</div>}
+          {mlPipelineItems.map(item => {
             const Icon = item.icon;
             return (
-              <button
+              <NavLink
                 key={item.id}
-                className={`sidebar-nav-item ${activeSection === item.id ? 'active' : ''}`}
-                onClick={() => onSectionChange(item.id)}
+                to={item.path}
+                className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
                 title={collapsed ? item.label : undefined}
+                style={{ textDecoration: 'none' }}
               >
                 <Icon size={17} style={{ flexShrink: 0 }} />
                 {!collapsed && <span className="sidebar-nav-label">{item.label}</span>}
-              </button>
+              </NavLink>
             );
           })}
 
           <div style={{ flex: 1 }} />
 
-          {!collapsed && <div className="sidebar-section-label" style={{ marginTop: 8 }}>Akun</div>}
+          {!collapsed && <div className="sidebar-section-label" style={{ marginTop: 8 }}>Sistem</div>}
           {bottomItems.map(item => {
             const Icon = item.icon;
             return (
-              <button
+              <NavLink
                 key={item.id}
-                className={`sidebar-nav-item ${activeSection === item.id ? 'active' : ''}`}
-                onClick={() => onSectionChange(item.id)}
+                to={item.path}
+                className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
                 title={collapsed ? item.label : undefined}
+                style={{ textDecoration: 'none' }}
               >
                 <Icon size={17} style={{ flexShrink: 0 }} />
                 {!collapsed && <span className="sidebar-nav-label">{item.label}</span>}
-              </button>
+              </NavLink>
             );
           })}
 
@@ -80,7 +82,7 @@ export function DashboardSidebar({ collapsed, onToggle, activeSection, onSection
             className="sidebar-nav-item"
             onClick={onBack}
             title={collapsed ? 'Kembali' : undefined}
-            style={{ marginTop: 8, borderTop: '1px solid var(--border-default)', paddingTop: 12 }}
+            style={{ marginTop: 8, borderTop: '1px solid var(--border-default)', paddingTop: 12, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}
           >
             <ChevronLeft size={17} style={{ flexShrink: 0 }} />
             {!collapsed && <span className="sidebar-nav-label">Kembali ke Beranda</span>}
